@@ -17,13 +17,26 @@
         .duplicate-groups li { border-left: 5px solid #f5c6cb; } /* Reddish border for duplicate groups */
         a { color: #007bff; text-decoration: none; }
         a:hover { text-decoration: underline; }
-        .back-link { display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #007bff; color: white; border-radius: 4px; text-decoration: none; }
-        .back-link:hover { background-color: #0056b3; }
+        .action-links a { display: inline-block; margin-top: 20px; padding: 10px 15px; color: white; border-radius: 4px; text-decoration: none; margin-right:10px; }
+        .upload-link { background-color: #007bff; }
+        .upload-link:hover { background-color: #0056b3; }
+        .download-link { background-color: #28a745; }
+        .download-link:hover { background-color: #1e7e34; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Deduplication Results</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                {% for category, message in messages %}
+                <li class="flash-{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
 
         {% if error %}
             <p style="color: red;">Error: {{ error }}</p>
@@ -45,18 +58,24 @@
                     <h3>Group {{ loop.index }}:</h3>
                     <ul>
                         {% for file_index in group %}
-                            <li>File: {{ session_files[file_index] }} (Index: {{ file_index }})</li>
+                            <li>File: {{ session_files[file_index] }} (Original index in input batch: {{ file_index }})</li>
                         {% endfor %}
                     </ul>
                 </div>
             {% endfor %}
-        {% else %}
-            {% if not error and not unique_files %}
-                 <p>No duplicate groups found with the selected criteria.</p>
-            {% endif %}
+        {% elif not error and not unique_files and not duplicate_groups %}
+             <p>No duplicate groups found with the selected criteria. All files were unique or no files processed.</p>
+        {% elif not error and not unique_files and duplicate_groups is none %}
+            {# Handles case where duplicate_groups might be None vs empty list #}
+            <p>No files processed or no duplicates found.</p>
         {% endif %}
 
-        <a href="{{ url_for('upload_file') }}" class="back-link">Upload More Files</a>
+        <div class="action-links">
+            <a href="{{ url_for('upload_file') }}" class="upload-link">Upload More Files</a>
+            {% if session.get('show_download_button') %}
+                <a href="{{ url_for('download_zip') }}" class="download-link">Download Deduplicated Files (ZIP)</a>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>

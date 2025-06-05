@@ -140,3 +140,72 @@ class TestUtilsFileParsing(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+import os
+
+# Expected Chinese text for comparison (adjust if parsing adds/removes newlines)
+# These assume the two lines are distinct paragraphs or lines.
+EXPECTED_CHINESE_TEXT_TXT = "你好，世界\n这是一个测试文档"
+EXPECTED_CHINESE_TEXT_DOCX = "你好，世界\n这是一个测试文档" # May depend on how DOCX is created
+EXPECTED_CHINESE_TEXT_PDF = "你好，世界\n这是一个测试文档" # PDF extraction is often less predictable
+
+FIXTURES_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
+SAMPLE_ZH_TXT = os.path.join(FIXTURES_DIR, 'sample_zh.txt')
+SAMPLE_ZH_DOCX = os.path.join(FIXTURES_DIR, 'sample_zh.docx')
+SAMPLE_ZH_PDF = os.path.join(FIXTURES_DIR, 'sample_zh.pdf')
+
+class TestChineseFileParsing(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # This check helps to remind that DOCX/PDF need to be real files
+        # Create fixtures dir if it doesn't exist (robustness for direct test runs)
+        os.makedirs(FIXTURES_DIR, exist_ok=True)
+        # Check if fixture files exist before trying to read them
+        if os.path.exists(SAMPLE_ZH_DOCX):
+            with open(SAMPLE_ZH_DOCX, encoding='utf-8') as f:
+                if "Placeholder for sample_zh.docx" in f.read():
+                    print(f"WARNING: {SAMPLE_ZH_DOCX} is a placeholder. DOCX tests might fail or be skipped.")
+        else:
+            print(f"WARNING: {SAMPLE_ZH_DOCX} not found. DOCX tests will be skipped.")
+
+        if os.path.exists(SAMPLE_ZH_PDF):
+            with open(SAMPLE_ZH_PDF, encoding='utf-8') as f:
+                if "Placeholder for sample_zh.pdf" in f.read():
+                    print(f"WARNING: {SAMPLE_ZH_PDF} is a placeholder. PDF tests might fail or be skipped.")
+        else:
+            print(f"WARNING: {SAMPLE_ZH_PDF} not found. PDF tests will be skipped.")
+
+    def test_parse_chinese_txt_file(self):
+        if not os.path.exists(SAMPLE_ZH_TXT):
+            self.skipTest(f"{SAMPLE_ZH_TXT} not found.")
+
+        with open(SAMPLE_ZH_TXT, 'r', encoding='utf-8') as f:
+            expected_content = f.read()
+
+        parsed_text = utils.parse_txt_file(SAMPLE_ZH_TXT)
+        self.assertFalse(parsed_text.startswith("Error:"), msg=f"Parsing TXT failed: {parsed_text}")
+        self.assertEqual(parsed_text, expected_content, msg="Chinese TXT content mismatch")
+
+    def test_parse_chinese_docx_file(self):
+        if not os.path.exists(SAMPLE_ZH_DOCX):
+            self.skipTest(f"{SAMPLE_ZH_DOCX} not found.")
+        with open(SAMPLE_ZH_DOCX, encoding='utf-8') as f:
+            if "Placeholder" in f.read():
+                self.skipTest(f"{SAMPLE_ZH_DOCX} is a placeholder.")
+
+        expected_content = EXPECTED_CHINESE_TEXT_DOCX
+        parsed_text = utils.parse_docx_file(SAMPLE_ZH_DOCX)
+        self.assertFalse(parsed_text.startswith("Error:"), msg=f"Parsing DOCX failed: {parsed_text}")
+        self.assertEqual(parsed_text.strip(), expected_content.strip(), msg="Chinese DOCX content mismatch")
+
+    def test_parse_chinese_pdf_file(self):
+        if not os.path.exists(SAMPLE_ZH_PDF):
+            self.skipTest(f"{SAMPLE_ZH_PDF} not found.")
+        with open(SAMPLE_ZH_PDF, encoding='utf-8') as f:
+            if "Placeholder" in f.read():
+                self.skipTest(f"{SAMPLE_ZH_PDF} is a placeholder.")
+
+        expected_content = EXPECTED_CHINESE_TEXT_PDF
+        parsed_text = utils.parse_pdf_file(SAMPLE_ZH_PDF)
+        self.assertFalse(parsed_text.startswith("Error:"), msg=f"Parsing PDF failed: {parsed_text}")
+        self.assertEqual(parsed_text.strip().replace("\\n", ""), expected_content.strip().replace("\\n", ""), msg="Chinese PDF content mismatch (whitespace normalized)")

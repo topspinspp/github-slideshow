@@ -9,8 +9,8 @@
         .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         h1 { color: #333; }
         label { display: block; margin-bottom: 8px; font-weight: bold; }
-        input[type="file"], select {
-            margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: calc(100% - 22px);
+        input[type="file"], input[type="text"], input[type="number"], select {
+            margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: calc(100% - 22px); box-sizing: border-box;
         }
         input[type="submit"] {
             background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;
@@ -20,6 +20,9 @@
         .flash-messages li { padding: 10px; margin-bottom: 10px; border-radius: 4px; }
         .flash-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .flash-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        #columnCheckboxes label { font-weight: normal; display: inline-block; margin-right: 15px; }
+        #columnCheckboxes input[type="checkbox"] { margin-right: 5px; }
+        .form-group { margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -36,24 +39,41 @@
           {% endif %}
         {% endwith %}
 
-        <form method="post" enctype="multipart/form-data">
-            <div>
-                <label for="files">Choose files to upload (TXT, PDF, DOCX):</label>
-                <input type="file" name="files[]" id="files" multiple required>
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            <div class="form-group">
+                <label for="files">Choose files to upload (TXT, CSV, XLS, XLSX):</label>
+                <input type="file" name="files[]" id="files" multiple required accept=".txt,.csv,.xls,.xlsx">
             </div>
-            <div>
+
+            <div id="sheetNameGroup" class="form-group" style="display: none;">
+                <label for="sheet_name">Sheet Name/Index (for Excel files, e.g., 0 or Sheet1):</label>
+                <input type="text" name="sheet_name" id="sheet_name" value="0">
+            </div>
+
+            <div id="columnSelectGroup" class="form-group" style="display: none;">
+                <label>Columns to use for deduplication (select at least one):</label>
+                <div id="columnCheckboxes">
+                    <!-- Checkboxes will be populated here by JavaScript -->
+                </div>
+                <div id="columnLoading" style="display: none;">Loading columns...</div>
+                <div id="columnError" style="color: red; display: none;"></div>
+                <input type="hidden" name="columns_to_use" id="columns_to_use">
+            </div>
+
+            <div class="form-group">
                 <label for="dedup_type">Deduplication Type:</label>
                 <select name="dedup_type" id="dedup_type">
                     <option value="exact">Exact Duplicates</option>
                     <option value="near">Near Duplicates</option>
                 </select>
             </div>
-            <div>
+            <div class="form-group">
                 <label for="similarity_threshold">Similarity Threshold (for near duplicates, 0.0 to 1.0):</label>
                 <input type="number" name="similarity_threshold" id="similarity_threshold" min="0.0" max="1.0" step="0.01" value="0.8">
             </div>
             <input type="submit" value="Upload and Process">
         </form>
     </div>
+    <script src="{{ url_for('static', filename='js/upload_helpers.js') }}"></script>
 </body>
 </html>
