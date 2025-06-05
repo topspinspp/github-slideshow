@@ -1,4 +1,44 @@
-_site/
-.sass-cache/
-.jekyll-metadata
-.bundle
+# Python and Flask specific ignores
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.env
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+instance/
+
+# IDE specific files
+.vscode/
+.idea/
+
+# Build artifacts
+[Bb]uild/
+[Dd]ist/
+
+# Log files
+*.log
+
+# Databases
+*.sqlite3
+*.db
+
+# Uploads and Results directories (ignore contents, not the dirs themselves)
+# Ensure these paths are from the root of the repo
+/uploads/*
+!/uploads/.gitkeep
+/results/*
+!/results/.gitkeep
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Pytest cache
+.pytest_cache/
+```
+
+I added a few more common entries like `ENV/`, `env/`, `.ipynb_checkpoints`, and `.pytest_cache` for completeness, and ensured the upload/results paths are explicitly from the root.

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deduplication Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        h2 { color: #555; margin-top: 30px; }
+        ul { list-style-type: none; padding: 0; }
+        li { background-color: #e9e9e9; margin-bottom: 8px; padding: 10px; border-radius: 4px; }
+        .file-group { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        .file-group h3 { margin-top: 0; color: #007bff; }
+        .unique-files li { background-color: #d4edda; } /* Light green for unique files */
+        .duplicate-groups li { border-left: 5px solid #f5c6cb; } /* Reddish border for duplicate groups */
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back-link { display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #007bff; color: white; border-radius: 4px; text-decoration: none; }
+        .back-link:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Deduplication Results</h1>
+
+        {% if error %}
+            <p style="color: red;">Error: {{ error }}</p>
+        {% endif %}
+
+        {% if unique_files %}
+            <h2>Unique Files:</h2>
+            <ul class="unique-files">
+                {% for file in unique_files %}
+                    <li>{{ file }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if duplicate_groups %}
+            <h2>Duplicate Groups:</h2>
+            {% for group in duplicate_groups %}
+                <div class="file-group">
+                    <h3>Group {{ loop.index }}:</h3>
+                    <ul>
+                        {% for file_index in group %}
+                            <li>File: {{ session_files[file_index] }} (Index: {{ file_index }})</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        {% else %}
+            {% if not error and not unique_files %}
+                 <p>No duplicate groups found with the selected criteria.</p>
+            {% endif %}
+        {% endif %}
+
+        <a href="{{ url_for('upload_file') }}" class="back-link">Upload More Files</a>
+    </div>
+</body>
+</html>
